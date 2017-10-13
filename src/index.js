@@ -78,9 +78,18 @@ function renderChart(args) {
     );
     window.document.body.appendChild(container);
 
+    const container2 = window.document.createElement('div');
+    container2.id = chartOptions.container2Id;
+    container2.setAttribute(
+      'style',
+      `width:${chartOptions.options.width}px;height:${chartOptions.options.height}px;`
+    );
+
     // Render chart
     const wrapper = new window.google.visualization.ChartWrapper(chartOptions);
     window.google.visualization.events.addListener(wrapper, 'ready', () => {
+      container2.innerHTML = `<img src="${wrapper.getChart().getImageURI()}">`;
+      window.document.body.appendChild(container2);
       resolve(args);
     });
     window.google.visualization.events.addListener(wrapper, 'error', error => {
@@ -100,6 +109,14 @@ function extractSVG(args) {
     .querySelector('#' + chartOptions.containerId + ' svg').outerHTML;
 }
 
+function extractPNG(args) {
+  const window = args.window;
+  const chartOptions = args.chartOptions;
+
+  return window.document
+  .querySelector('#' + chartOptions.container2Id + ' img').outerHTML;
+}
+
 
 /**
  * Render a Google Chart to a png image
@@ -108,9 +125,14 @@ function extractSVG(args) {
  * @return {Promise}
  */
 function render(chartOptions, format) {
-  format = format || 'svg';
+  format = format || 'png';
 
-  if (format !== 'svg') {
+  const extractors = {
+    svg: extractSVG,
+    png: extractPNG
+  }
+
+  if (format !== 'svg' && format !== 'png') {
     return Promise.reject(new Error('[InputError] unsupported format'));
   }
   if (!isPlainObject(chartOptions)) {
@@ -119,13 +141,14 @@ function render(chartOptions, format) {
 
   // Default chartOptions
   chartOptions.containerId = 'vis_div';
+  chartOptions.container2Id = 'vis_div2';
   chartOptions.options = chartOptions.options || {};
   chartOptions.options.width = chartOptions.options.width || 600;
   chartOptions.options.height = chartOptions.options.height || 400;
 
   return createGoogleChartWindow({ chartOptions, format })
     .then(renderChart)
-    .then(extractSVG)
+    .then(extractors[format])
 }
 
 module.exports = render;
