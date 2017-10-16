@@ -22,7 +22,7 @@
     "test": "NODE_ICU_DATA=node_modules/full-icu mocha"
   },
   "dependencies": {
-    "canvas-prebuilt": "^1.6.5-prerelease.1",
+    "canvas": "^1.6.7",
     "jsdom": "^9.2.1",
     "lodash.isplainobject": "^4.0.4"
   },
